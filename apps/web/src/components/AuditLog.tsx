@@ -65,12 +65,30 @@ export function AuditLog() {
             ({entries.length} entries)
           </span>
         </h2>
-        <button
-          onClick={load}
-          className="px-3 py-1.5 text-xs text-muted hover:text-zinc-300 transition-colors"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/audit/export/json${filter !== "all" ? `?action=${filter}` : ""}`}
+            download
+            className="px-2.5 py-1 text-[11px] text-muted hover:text-zinc-300 border border-surface-3
+                       rounded hover:border-zinc-500 transition-colors"
+          >
+            Export JSON
+          </a>
+          <a
+            href={`/api/audit/export/csv${filter !== "all" ? `?action=${filter}` : ""}`}
+            download
+            className="px-2.5 py-1 text-[11px] text-muted hover:text-zinc-300 border border-surface-3
+                       rounded hover:border-zinc-500 transition-colors"
+          >
+            Export CSV
+          </a>
+          <button
+            onClick={load}
+            className="px-2.5 py-1 text-[11px] text-muted hover:text-zinc-300 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
