@@ -1,0 +1,28 @@
+{
+  "name": "@fintrace/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate:down": "tsx src/db/migrate-down.ts"
+  },
+  "dependencies": {
+    "@fintrace/shared": "workspace:*",
+    "fastify": "^5.2.0",
+    "@fastify/cors": "^10.0.0",
+    "plaid": "^28.0.0",
+    "pg": "^8.13.0",
+    "dotenv": "^16.4.0",
+    "nanoid": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
