@@ -32,4 +32,34 @@ export const api = {
 
   getAccountTransactions: (accountId: string) =>
     request<any[]>(`/accounts/${accountId}/transactions`),
+
+  // Agent
+  runAnalysis: () =>
+    request<{ proposals_created: Record<string, any[]>; total: number }>(
+      "/agent/analyze",
+      { method: "POST" }
+    ),
+
+  // Proposals
+  getProposals: (status?: string) =>
+    request<any[]>(status ? `/proposals?status=${status}` : "/proposals"),
+
+  approveProposal: (id: string) =>
+    request<{ id: string; status: string }>(`/proposals/${id}/approve`, {
+      method: "POST",
+    }),
+
+  rejectProposal: (id: string) =>
+    request<{ id: string; status: string }>(`/proposals/${id}/reject`, {
+      method: "POST",
+    }),
+
+  executeProposal: (id: string) =>
+    request<{ id: string; status: string }>(`/proposals/${id}/execute`, {
+      method: "POST",
+    }),
+
+  // Audit
+  getAuditLog: (action?: string) =>
+    request<any[]>(action ? `/audit?action=${action}` : "/audit"),
 };
