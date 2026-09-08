@@ -229,12 +229,33 @@ export default function App() {
               sandbox mode — no real money movement
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {connected && (
+              <>
+                <button
+                  onClick={async () => {
+                    await api.seedData();
+                    await loadData();
+                  }}
+                  className="text-[10px] text-zinc-600 hover:text-zinc-400 transition-colors"
+                >
+                  Seed demo data
+                </button>
+                <span className="text-zinc-800">|</span>
+                <button
+                  onClick={async () => {
+                    await api.resetData();
+                    await loadData();
+                  }}
+                  className="text-[10px] text-zinc-600 hover:text-rose-400 transition-colors"
+                >
+                  Reset
+                </button>
+                <span className="text-zinc-800">|</span>
+              </>
+            )}
             <span className="text-[10px] text-zinc-700">
-              append-only audit trail
-            </span>
-            <span className="text-[10px] text-zinc-700">
-              deterministic agent logic
+              append-only audit · deterministic agent
             </span>
           </div>
         </div>

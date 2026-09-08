@@ -62,4 +62,14 @@ export const api = {
   // Audit
   getAuditLog: (action?: string) =>
     request<any[]>(action ? `/audit?action=${action}` : "/audit"),
+
+  // Dev
+  seedData: () =>
+    request<{ inserted: number; message: string; expected_proposals: string[] }>(
+      "/dev/seed",
+      { method: "POST" }
+    ),
+
+  resetData: () =>
+    request<{ message: string }>("/dev/reset", { method: "POST" }),
 };

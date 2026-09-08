@@ -81,12 +81,15 @@ pnpm dev
 1. Click **Connect Account** → Plaid Link opens
 2. Use Plaid Sandbox test credentials (user: `user_good`, pass: `pass_good`)
 3. Select any bank → transactions sync into Postgres
-4. Go to **Proposals** tab → click **Run Analysis**
-5. Agent creates proposals based on transaction patterns
-6. **Approve** or **Reject** each proposal
-7. **Execute** approved proposals (simulated — no real money movement)
-8. Check **Audit Log** tab — every action is recorded with before/after state
-9. Export audit log as JSON or CSV
+4. Click **Seed demo data** in the footer — injects synthetic transactions that reliably trigger all three proposal types (recurring subscriptions, income deposits, spending outlier)
+5. Go to **Proposals** tab → click **Run Analysis**
+6. Agent creates proposals: subscription cancellations, savings transfer, spending anomaly flag
+7. **Approve** or **Reject** each proposal
+8. **Execute** approved proposals (simulated — no real money movement)
+9. Check **Audit Log** tab — every action is recorded with before/after state
+10. Export audit log as JSON or CSV
+
+To re-run the demo cleanly, click **Reset** in the footer to clear seed data, proposals, and audit entries.
 
 ## Non-goals
 

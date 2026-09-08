@@ -6,6 +6,7 @@ import { accountsRoutes } from "./routes/accounts.js";
 import { agentRoutes } from "./routes/agent.js";
 import { proposalsRoutes } from "./routes/proposals.js";
 import { auditRoutes } from "./routes/audit.js";
+import { devRoutes } from "./routes/dev.js";
 
 const app = Fastify({ logger: true });
 
@@ -16,6 +17,7 @@ app.register(accountsRoutes);
 app.register(agentRoutes);
 app.register(proposalsRoutes);
 app.register(auditRoutes);
+app.register(devRoutes);
 
 app.get("/health", async () => ({ status: "ok" }));
 
