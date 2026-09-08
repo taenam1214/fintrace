@@ -3,6 +3,9 @@ import cors from "@fastify/cors";
 import "dotenv/config";
 import { plaidRoutes } from "./routes/plaid.js";
 import { accountsRoutes } from "./routes/accounts.js";
+import { agentRoutes } from "./routes/agent.js";
+import { proposalsRoutes } from "./routes/proposals.js";
+import { auditRoutes } from "./routes/audit.js";
 
 const app = Fastify({ logger: true });
 
@@ -10,6 +13,9 @@ await app.register(cors, { origin: "http://localhost:5173" });
 
 app.register(plaidRoutes);
 app.register(accountsRoutes);
+app.register(agentRoutes);
+app.register(proposalsRoutes);
+app.register(auditRoutes);
 
 app.get("/health", async () => ({ status: "ok" }));
 
