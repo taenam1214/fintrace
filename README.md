@@ -6,6 +6,25 @@ An AI agent ingests real bank transaction data via Plaid, runs deterministic heu
 
 Built to demonstrate that the hard problem in "AI agents that touch money" is the trust and governance layer, not the reasoning.
 
+## Why This Matters
+
+Most fintech apps either show data passively (dashboards) or act autonomously without guardrails. The industry is moving toward AI agents that can *do things* on your behalf — cancel subscriptions, move money, flag fraud. But the trust problem is massive: users don't want software silently moving their money.
+
+Fintrace demonstrates the middle ground: **autonomous detection, human-gated execution**. The agents are opinionated (they find problems and recommend specific actions), but they never act without explicit consent. And every decision — the proposal, who approved it, when it was executed — goes into an append-only audit trail that can't be tampered with.
+
+This pattern maps directly to where platforms like Plaid are heading: enabling developers to build apps that don't just *read* financial data but *act* on it (Plaid Transfer, payment initiation, etc.). The trust, auditability, and governance layer is what makes that possible.
+
+### What Approve / Reject Would Do in Production
+
+In this demo, execution is simulated. In a real product:
+
+- **Approve + Execute a subscription cancellation** — The system would call the merchant's cancellation API or initiate a card-level block through the issuer processor. The user said "yes, cancel Netflix," and the agent carries it out.
+- **Approve + Execute a savings transfer** — The system would initiate an ACH transfer via Plaid Transfer (or a bank API) moving the recommended amount from checking to savings. Real money moves.
+- **Reject a proposal** — The agent's recommendation is dismissed. Nothing happens, but the rejection is logged. This is valuable data — it teaches the system what the user cares about vs. what they don't.
+- **Spending anomaly (flag only)** — Even approval doesn't move money. It's an acknowledgment: "I see this unusual charge." In production, this could trigger a fraud dispute flow or simply mark it as reviewed.
+
+The audit log is the backbone — in a regulated financial product, you need a tamper-proof record of who proposed what, who approved it, and what happened. That's why the `audit_log` table blocks UPDATE and DELETE at the database level.
+
 ## Architecture
 
 ```
@@ -169,14 +188,14 @@ pnpm dev
 
 ### Demo Walkthrough
 
-1. Click **Connect Account** — Plaid Link opens in sandbox mode
-2. Use Plaid test credentials: username `user_good`, password `pass_good`
-3. Select any bank — transactions sync into Postgres
-4. Click **Seed demo data** in the footer — injects synthetic transactions that trigger all three proposal types
-5. Go to **Proposals** tab, click **Run Analysis**
-6. Agent creates proposals: subscription cancellations, savings transfer, spending anomaly flag
-7. **Approve** or **Reject** each proposal (reject asks for confirmation)
-8. **Execute** approved proposals (simulated — no real money movement)
-9. Check **Audit Log** tab — every action recorded with before/after state
-10. Export audit log as JSON or CSV
+1. App opens to a 3-step onboarding flow (Welcome → How It Works → Connect)
+2. Click **Connect Account** — Plaid Link opens in sandbox mode
+3. Search for **First Platypus Bank** (sandbox-compatible, no OAuth redirect)
+4. Use Plaid test credentials: username `user_good`, password `pass_good`
+5. Transactions sync into Postgres, onboarding dismisses
+6. Click **Seed demo data** in the footer — injects synthetic transactions, runs all three agents, and auto-processes some proposals so every tab has data
+7. Go to **Proposals** tab — see pending proposals alongside already-approved and rejected ones
+8. **Approve** or **Reject** remaining proposals
+9. **Execute** approved proposals (simulated — no real money movement)
+10. Check **Audit Log** tab — every state change recorded with before/after state
 11. Click **Reset** in the footer to clear seed data and start over
