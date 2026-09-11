@@ -1,13 +1,18 @@
 const BASE = "/api";
 
 async function request<T>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...opts,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      headers: { "Content-Type": "application/json" },
+      ...opts,
+    });
+  } catch {
+    throw new Error("Network error — is the API server running?");
+  }
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message || res.statusText);
+    throw new Error(err.message || `Request failed (${res.status})`);
   }
   const json = await res.json();
   return json.data;
