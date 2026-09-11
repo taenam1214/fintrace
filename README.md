@@ -32,10 +32,10 @@ The audit log is the backbone — in a regulated financial product, you need a t
 │  Browser (React + TypeScript + Tailwind)                        │
 │                                                                 │
 │  ┌──────────┐  ┌──────────────┐  ┌──────────┐  ┌────────────┐   │
-│  │ PlaidLink│  │ ProposalQueue│  │ AuditLog │  │ Transaction│   │
-│  │          │  │  approve /   │  │  append  │  │    List    │   │
-│  │  OAuth   │  │  reject /    │  │  -only   │  │  date-group│   │
-│  │  flow    │  │  execute     │  │  viewer  │  │  + filter  │   │
+│  │Onboarding│  │ ProposalQueue│  │ AuditLog │  │ Transaction│   │
+│  │  3-step  │  │  approve /   │  │  append  │  │    List    │   │
+│  │  flow +  │  │  reject /    │  │  -only   │  │  account   │   │
+│  │ PlaidLink│  │  execute     │  │  export  │  │  filter    │   │
 │  └────┬─────┘  └──────┬───────┘  └────┬─────┘  └─────┬──────┘   │
 │       │               │               │              │          │
 └───────┼───────────────┼───────────────┼──────────────┼──────────┘
@@ -107,6 +107,16 @@ Identifies income deposits (Plaid negative amounts > $500 in last 60 days). Comp
 
 ### Spending Anomaly Detection
 Calculates per-category mean and standard deviation of transaction amounts (requires 5+ data points). Flags transactions exceeding mean + 2 standard deviations (z-score > 2.0). Falls back to per-merchant analysis when category data is sparse. Proposes "flag for review" only — the agent knows when *not* to act.
+
+## Frontend UX
+
+- **Onboarding flow**: 3-step animated walkthrough (Welcome → How It Works → Connect Account) with crossfade transitions, staggered card animations, and step indicator dots. Persisted in localStorage so it only shows once.
+- **Toast notifications**: Success/error/info toasts for all async operations (seed, analysis, approve, reject, execute). Auto-dismiss after 4 seconds.
+- **Confirmation dialogs**: Destructive actions (reset data, reject proposal) require explicit confirmation via modal dialog.
+- **Proposal cards**: Type-specific structured detail views — subscription cards show merchant/frequency/savings, savings cards show income/expense/surplus breakdown, anomaly cards show a z-score visualization bar. Raw JSON toggle available.
+- **Audit log**: Expandable entries with before/after state diffs, color-coded action badges, actor indicators (agent vs. user). Export to JSON or CSV.
+- **Account filtering**: Click any account to filter transactions to that account only.
+- **Connected state**: PlaidLink button shows a disabled "✓ Connected" state after account is linked. Header shows a green pulse dot with "sandbox" label.
 
 ## Security Model
 
@@ -192,10 +202,14 @@ pnpm dev
 2. Click **Connect Account** — Plaid Link opens in sandbox mode
 3. Search for **First Platypus Bank** (sandbox-compatible, no OAuth redirect)
 4. Use Plaid test credentials: username `user_good`, password `pass_good`
-5. Transactions sync into Postgres, onboarding dismisses
+5. Transactions sync into Postgres, onboarding dismisses, Connect button shows "✓ Connected"
 6. Click **Seed demo data** in the footer — injects synthetic transactions, runs all three agents, and auto-processes some proposals so every tab has data
-7. Go to **Proposals** tab — see pending proposals alongside already-approved and rejected ones
-8. **Approve** or **Reject** remaining proposals
-9. **Execute** approved proposals (simulated — no real money movement)
-10. Check **Audit Log** tab — every state change recorded with before/after state
-11. Click **Reset** in the footer to clear seed data and start over
+7. Browse **Accounts** tab — click an account to filter transactions, view total balance
+8. Go to **Proposals** tab — see pending proposals alongside already-approved and rejected ones
+9. Expand proposal details to see structured breakdowns (savings math, z-score bar, subscription frequency)
+10. **Approve** or **Reject** remaining proposals (reject asks for confirmation)
+11. **Execute** approved proposals (simulated — no real money movement)
+12. Optionally click **Run Analysis** to re-run the agent on current transactions
+13. Check **Audit Log** tab — every state change recorded with before/after state
+14. **Export** the audit log as JSON or CSV
+15. Click **Reset** in the footer to clear seed data and start over
