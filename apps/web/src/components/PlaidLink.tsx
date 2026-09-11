@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { usePlaidLink } from "react-plaid-link";
 import { api } from "../lib/api";
 
-export function PlaidLinkButton({ onSuccess }: { onSuccess: () => void }) {
+export function PlaidLinkButton({ onSuccess, connected }: { onSuccess: () => void; connected?: boolean }) {
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,6 +45,21 @@ export function PlaidLinkButton({ onSuccess }: { onSuccess: () => void }) {
   if (error) {
     return (
       <span className="text-[11px] text-rose-400/80">{error}</span>
+    );
+  }
+
+  if (connected) {
+    return (
+      <button
+        disabled
+        className="px-4 py-2 bg-surface-2 text-zinc-500 font-semibold text-[11px] rounded-md
+                   cursor-not-allowed flex items-center gap-2"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        Connected
+      </button>
     );
   }
 
