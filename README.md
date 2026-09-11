@@ -198,18 +198,33 @@ pnpm dev
 
 ### Demo Walkthrough
 
-1. App opens to a 3-step onboarding flow (Welcome → How It Works → Connect)
-2. Click **Connect Account** — Plaid Link opens in sandbox mode
-3. Search for **First Platypus Bank** (sandbox-compatible, no OAuth redirect)
-4. Use Plaid test credentials: username `user_good`, password `pass_good`
-5. Transactions sync into Postgres, onboarding dismisses, Connect button shows "✓ Connected"
-6. Click **Seed demo data** in the footer — injects synthetic transactions, runs all three agents, and auto-processes some proposals so every tab has data
-7. Browse **Accounts** tab — click an account to filter transactions, view total balance
-8. Go to **Proposals** tab — see pending proposals alongside already-approved and rejected ones
-9. Expand proposal details to see structured breakdowns (savings math, z-score bar, subscription frequency)
-10. **Approve** or **Reject** remaining proposals (reject asks for confirmation)
-11. **Execute** approved proposals (simulated — no real money movement)
-12. Optionally click **Run Analysis** to re-run the agent on current transactions
-13. Check **Audit Log** tab — every state change recorded with before/after state
-14. **Export** the audit log as JSON or CSV
-15. Click **Reset** in the footer to clear seed data and start over
+#### Step 1 — Onboarding
+
+The app opens with a 3-step onboarding flow. Click **Get Started**, then **Next** to read through how the agents work, then proceed to account connection.
+
+#### Step 2 — Connect a Bank Account
+
+> **Important:** Do NOT select Chase, Wells Fargo, or other major banks — they use OAuth redirects that don't work in Sandbox mode.
+
+1. Click **Connect Account** — the Plaid Link modal opens
+2. Search for **First Platypus Bank** (Plaid's sandbox test institution)
+3. Enter credentials: username **`user_good`**, password **`pass_good`**
+4. Select any accounts when prompted, then click **Continue**
+5. Plaid Link closes, transactions sync, onboarding dismisses automatically
+
+If you'd rather skip for now, click **Skip for now** at the bottom of step 3.
+
+#### Step 3 — Seed Demo Data
+
+Click **Seed demo data** in the footer. This does three things automatically:
+- Inserts synthetic transactions designed to trigger all three agent types
+- Runs all three agent analyses to generate proposals
+- Auto-processes some proposals (one approved + executed, one rejected) so every tab has data
+
+#### Step 4 — Explore
+
+- **Accounts tab** — Click any account to filter transactions. Total balance shown below.
+- **Proposals tab** — Pending proposals are waiting for your decision. Expand details to see structured breakdowns (savings math, z-score bar, subscription frequency). Approve, reject, or execute.
+- **Audit Log tab** — Every state change recorded with before/after diffs. Export as JSON or CSV.
+- **Run Analysis** — Re-run the agent manually from the Proposals tab anytime.
+- **Reset** — Clear all seed data and start over (footer, requires confirmation).
