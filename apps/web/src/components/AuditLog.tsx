@@ -40,6 +40,67 @@ function formatTimestamp(ts: string) {
   });
 }
 
+function formatCurrency(n: number | null | undefined) {
+  if (n == null) return null;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(n);
+}
+
+// Render a state object as labeled fields instead of raw JSON
+function StateView({
+  state,
+  variant,
+}: {
+  state: Record<string, unknown>;
+  variant: "before" | "after" | "neutral";
+}) {
+  const colorClass =
+    variant === "before"
+      ? "text-rose-400/70"
+      : variant === "after"
+        ? "text-emerald-400/70"
+        : "text-zinc-400";
+
+  const entries = Object.entries(state);
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 p-2 bg-surface-0 rounded border border-surface-3">
+      {entries.map(([key, value]) => (
+        <div key={key} className="contents">
+          <span className="text-[10px] text-muted font-mono">{key}</span>
+          <span className={`text-[11px] font-mono truncate ${colorClass}`}>
+            {formatValue(key, value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function formatValue(key: string, value: unknown): string {
+  if (value == null) return "—";
+  if (typeof value === "number") {
+    if (
+      key.includes("amount") ||
+      key.includes("savings") ||
+      key.includes("income") ||
+      key.includes("expense") ||
+      key.includes("surplus")
+    ) {
+      return formatCurrency(value) ?? String(value);
+    }
+    if (key.includes("rate")) return `${(value * 100).toFixed(0)}%`;
+    return String(value);
+  }
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
+
 export function AuditLog() {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [filter, setFilter] = useState<string>("all");
@@ -58,7 +119,7 @@ export function AuditLog() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <h2 className="text-sm font-semibold text-muted uppercase tracking-wider">
           Audit Log
           <span className="ml-2 text-zinc-500 font-normal normal-case">
@@ -153,15 +214,16 @@ export function AuditLog() {
 
               {/* Expanded detail */}
               {expandedId === entry.id && (
-                <div className="px-4 pb-3 space-y-2">
+                <div className="px-4 pb-3 space-y-2 fade-in">
                   {entry.before_state && (
                     <div>
                       <span className="text-[10px] text-muted uppercase tracking-wider">
                         Before
                       </span>
-                      <pre className="text-[11px] text-rose-400/70 font-mono mt-0.5 p-2 bg-surface-0 rounded border border-surface-3 whitespace-pre-wrap">
-                        {JSON.stringify(entry.before_state, null, 2)}
-                      </pre>
+                      <StateView
+                        state={entry.before_state as Record<string, unknown>}
+                        variant="before"
+                      />
                     </div>
                   )}
                   {entry.after_state && (
@@ -169,9 +231,10 @@ export function AuditLog() {
                       <span className="text-[10px] text-muted uppercase tracking-wider">
                         After
                       </span>
-                      <pre className="text-[11px] text-emerald-400/70 font-mono mt-0.5 p-2 bg-surface-0 rounded border border-surface-3 whitespace-pre-wrap">
-                        {JSON.stringify(entry.after_state, null, 2)}
-                      </pre>
+                      <StateView
+                        state={entry.after_state as Record<string, unknown>}
+                        variant="after"
+                      />
                     </div>
                   )}
                   {entry.metadata && (
@@ -179,9 +242,10 @@ export function AuditLog() {
                       <span className="text-[10px] text-muted uppercase tracking-wider">
                         Metadata
                       </span>
-                      <pre className="text-[11px] text-zinc-500 font-mono mt-0.5 p-2 bg-surface-0 rounded border border-surface-3 whitespace-pre-wrap">
-                        {JSON.stringify(entry.metadata, null, 2)}
-                      </pre>
+                      <StateView
+                        state={entry.metadata as Record<string, unknown>}
+                        variant="neutral"
+                      />
                     </div>
                   )}
                   <p className="text-[10px] text-zinc-600 font-mono">
