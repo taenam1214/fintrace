@@ -6,6 +6,7 @@ import { ProposalQueue } from "./components/ProposalQueue";
 import { AuditLog } from "./components/AuditLog";
 import { ToastProvider, useToast } from "./components/Toast";
 import { ConfirmDialog } from "./components/ConfirmDialog";
+import { Onboarding, useOnboardingComplete } from "./components/Onboarding";
 import { api } from "./lib/api";
 import type { Account, Transaction } from "@fintrace/shared";
 
@@ -21,6 +22,7 @@ function AppContent() {
   const [seeding, setSeeding] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [onboarded, setOnboarded] = useState(useOnboardingComplete);
   const { toast } = useToast();
 
   // Track tab key to force re-mount child components on tab switch
@@ -101,6 +103,15 @@ function AppContent() {
     { key: "proposals", label: "Proposals" },
     { key: "audit", label: "Audit Log" },
   ];
+
+  if (!onboarded) {
+    return (
+      <Onboarding
+        onComplete={() => setOnboarded(true)}
+        onLinkSuccess={handleLinkSuccess}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">

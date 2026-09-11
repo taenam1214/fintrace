@@ -69,6 +69,38 @@
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
+  /* Onboarding step transitions */
+  .step-enter {
+    animation: stepIn 0.4s ease-out both;
+  }
+
+  .step-exit {
+    animation: stepOut 0.25s ease-in both;
+  }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes stepOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-8px); }
+  }
+
+  .stagger-1 { animation-delay: 0ms; }
+  .stagger-2 { animation-delay: 120ms; }
+  .stagger-3 { animation-delay: 240ms; }
+
+  .card-stagger {
+    animation: cardIn 0.4s ease-out both;
+  }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
   .dialog-backdrop {
     position: fixed;
     inset: 0;
