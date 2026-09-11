@@ -72,7 +72,7 @@ function AppContent() {
     setSeeding(true);
     try {
       await api.seedData();
-      toast("Demo data seeded — run analysis to generate proposals", "success");
+      toast("Demo data seeded with proposals and audit log", "success");
       await loadData();
     } catch (err: any) {
       toast(err.message || "Seed failed", "error");
@@ -159,7 +159,7 @@ function AppContent() {
                 <span className="text-[10px] text-muted hidden sm:inline">sandbox</span>
               </div>
             )}
-            <PlaidLinkButton onSuccess={handleLinkSuccess} />
+            <PlaidLinkButton onSuccess={handleLinkSuccess} connected={connected} />
           </div>
         </div>
       </header>

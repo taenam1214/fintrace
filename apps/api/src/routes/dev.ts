@@ -1,6 +1,9 @@
 import { FastifyInstance } from "fastify";
 import { nanoid } from "nanoid";
 import pool from "../db/pool.js";
+import { createSubscriptionProposals } from "../agent/subscriptions.js";
+import { createSavingsProposals } from "../agent/savings.js";
+import { createAnomalyProposals } from "../agent/anomalies.js";
 
 /**
  * Seed endpoint — inserts synthetic transactions into an existing account
@@ -125,16 +128,65 @@ export async function devRoutes(app: FastifyInstance) {
       inserted++;
     }
 
+    // ── Run agent analysis to generate proposals ──
+    const subscriptionProposals = await createSubscriptionProposals();
+    const savingsProposals = await createSavingsProposals();
+    const anomalyProposals = await createAnomalyProposals();
+    const allProposals = [
+      ...subscriptionProposals,
+      ...savingsProposals,
+      ...anomalyProposals,
+    ];
+
+    // ── Auto-process some proposals so audit log has diverse entries ──
+    // Approve + execute the first subscription, reject the second, leave the rest pending
+    for (let i = 0; i < allProposals.length && i < 2; i++) {
+      const p = allProposals[i];
+      if (i === 0) {
+        // Approve then execute
+        await pool.query(
+          "UPDATE proposals SET status = 'approved', updated_at = NOW() WHERE id = $1",
+          [p.id]
+        );
+        await pool.query(
+          `INSERT INTO audit_log (id, proposal_id, action, actor, before_state, after_state)
+           VALUES ($1, $2, 'proposal_approved', 'user', $3, $4)`,
+          [nanoid(), p.id, JSON.stringify({ status: "pending" }), JSON.stringify({ status: "approved" })]
+        );
+        await pool.query(
+          "UPDATE proposals SET status = 'executed', updated_at = NOW() WHERE id = $1",
+          [p.id]
+        );
+        await pool.query(
+          `INSERT INTO audit_log (id, proposal_id, action, actor, before_state, after_state, metadata)
+           VALUES ($1, $2, 'proposal_executed', 'agent', $3, $4, $5)`,
+          [
+            nanoid(), p.id,
+            JSON.stringify({ status: "approved" }),
+            JSON.stringify({ status: "executed" }),
+            JSON.stringify({ simulated: true, message: `Simulated execution of: ${p.title}` }),
+          ]
+        );
+      } else {
+        // Reject
+        await pool.query(
+          "UPDATE proposals SET status = 'rejected', updated_at = NOW() WHERE id = $1",
+          [p.id]
+        );
+        await pool.query(
+          `INSERT INTO audit_log (id, proposal_id, action, actor, before_state, after_state)
+           VALUES ($1, $2, 'proposal_rejected', 'user', $3, $4)`,
+          [nanoid(), p.id, JSON.stringify({ status: "pending" }), JSON.stringify({ status: "rejected" })]
+        );
+      }
+    }
+
     return {
       data: {
         inserted,
+        proposals_created: allProposals.length,
         message:
-          "Seed data inserted. Run agent analysis to generate proposals for all three types.",
-        expected_proposals: [
-          "Subscription cancellation: Netflix ($15.49/mo), Spotify ($9.99/mo), iCloud ($2.99/mo)",
-          "Savings transfer: ~20% of surplus after $3,200 income vs ~$550 expenses",
-          "Spending anomaly: $382.47 Whole Foods charge vs ~$55 grocery average",
-        ],
+          "Seed data inserted with proposals and audit log entries.",
       },
     };
   });
