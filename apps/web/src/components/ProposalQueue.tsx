@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Proposal } from "@fintrace/shared";
 import { api } from "../lib/api";
 import { ProposalCard } from "./ProposalCard";
+import { useToast } from "./Toast";
 
 const STATUS_FILTERS = [
   "all",
@@ -16,9 +17,7 @@ export function ProposalQueue() {
   const [filter, setFilter] = useState<string>("all");
   const [analyzing, setAnalyzing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [lastResult, setLastResult] = useState<{
-    total: number;
-  } | null>(null);
+  const { toast } = useToast();
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -27,10 +26,12 @@ export function ProposalQueue() {
         filter === "all" ? undefined : filter
       );
       setProposals(data);
+    } catch (err: any) {
+      toast(err.message || "Failed to load proposals", "error");
     } finally {
       setLoading(false);
     }
-  }, [filter]);
+  }, [filter, toast]);
 
   useEffect(() => {
     load();
@@ -38,11 +39,19 @@ export function ProposalQueue() {
 
   const runAnalysis = async () => {
     setAnalyzing(true);
-    setLastResult(null);
     try {
       const result = await api.runAnalysis();
-      setLastResult({ total: result.total });
+      if (result.total === 0) {
+        toast("Analysis complete — no new proposals", "info");
+      } else {
+        toast(
+          `Analysis complete — ${result.total} new proposal${result.total > 1 ? "s" : ""} created`,
+          "success"
+        );
+      }
       await load();
+    } catch (err: any) {
+      toast(err.message || "Analysis failed", "error");
     } finally {
       setAnalyzing(false);
     }
@@ -56,7 +65,7 @@ export function ProposalQueue() {
   return (
     <div>
       {/* Header row */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-6 flex-wrap gap-3">
         <div>
           <h2 className="text-[11px] font-semibold text-muted uppercase tracking-wider mb-1">
             Agent Proposals
@@ -78,29 +87,20 @@ export function ProposalQueue() {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          {lastResult && !analyzing && (
-            <span className="text-[11px] text-zinc-500 fade-in">
-              {lastResult.total === 0
-                ? "No new proposals"
-                : `${lastResult.total} new proposal${lastResult.total > 1 ? "s" : ""}`}
-            </span>
-          )}
-          <button
-            onClick={runAnalysis}
-            disabled={analyzing}
-            className="px-4 py-2 text-xs font-medium bg-surface-1 border border-surface-3
-                       hover:border-accent/30 hover:text-accent rounded-md transition-all
-                       disabled:opacity-40 flex items-center gap-2"
-          >
-            {analyzing && <div className="spinner" />}
-            {analyzing ? "Analyzing..." : "Run Analysis"}
-          </button>
-        </div>
+        <button
+          onClick={runAnalysis}
+          disabled={analyzing}
+          className="px-4 py-2 text-xs font-medium bg-surface-1 border border-surface-3
+                     hover:border-accent/30 hover:text-accent rounded-md transition-all
+                     disabled:opacity-40 flex items-center gap-2"
+        >
+          {analyzing && <div className="spinner" />}
+          {analyzing ? "Analyzing..." : "Run Analysis"}
+        </button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-1 mb-5 pb-4 border-b border-surface-3">
+      <div className="flex items-center gap-1 mb-5 pb-4 border-b border-surface-3 flex-wrap">
         {STATUS_FILTERS.map((s) => {
           const count = s === "all"
             ? proposals.length
